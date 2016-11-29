@@ -1,4 +1,4 @@
-IF OBJECT_ID('proj.BrokerPortfoliol') IS NOT NULL DROP TABLE proj.BrokerPortfolio;
+IF OBJECT_ID('proj.BrokerPortfolio') IS NOT NULL DROP TABLE proj.BrokerPortfolio;
 IF OBJECT_ID('proj.Portfolio') IS NOT NULL DROP TABLE proj.Portfolio;
 IF OBJECT_ID('proj.Transactions') IS NOT NULL DROP TABLE proj.Transactions;
 IF OBJECT_ID('proj.Brokers') IS NOT NULL DROP TABLE proj.Brokers;
@@ -38,7 +38,6 @@ CREATE TABLE proj.Sectors (
 CREATE TABLE proj.Symbol (
 	SymbolID INT PRIMARY KEY IDENTITY,
 	[Name] VARCHAR(32) NULL,
-	[Description] VARCHAR(128) NULL,
 	CountryID INT UNIQUE NOT NULL REFERENCES proj.Country(CountryID),
 	ExchangeID INT UNIQUE NOT NULL REFERENCES proj.Exchange(ExchangeID),
 	IndustryID INT UNIQUE NOT NULL REFERENCES proj.Industries(IndustryID),
