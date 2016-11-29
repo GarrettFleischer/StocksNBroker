@@ -11,41 +11,41 @@ IF OBJECT_ID('proj.Industries') IS NOT NULL DROP TABLE proj.Industries;
 IF OBJECT_ID('proj.Exchange') IS NOT NULL DROP TABLE proj.Exchange;
 IF OBJECT_ID('proj.Country') IS NOT NULL DROP TABLE proj.Country;
 
-go
-CREATE SCHEMA proj
+--go
+--CREATE SCHEMA proj
 
 go
 CREATE TABLE proj.Country (
 	CountryID INT PRIMARY KEY IDENTITY,
-	[Name] VARCHAR(32) NULL
+	[Name] VARCHAR(256) NULL
 	)
 
 CREATE TABLE proj.Exchange (
 	ExchangeID INT PRIMARY KEY IDENTITY,
-	[Name] VARCHAR(32) NULL
+	[Name] VARCHAR(256) NULL
 	)
 
 CREATE TABLE proj.Industries (
 	IndustryID INT PRIMARY KEY IDENTITY,
-	[Name] VARCHAR(32) NULL
+	[Name] VARCHAR(256) NULL
 	)
 
 CREATE TABLE proj.Sectors (
 	SectorID INT PRIMARY KEY IDENTITY,
-	[Name] VARCHAR(32) NULL
+	[Name] VARCHAR(256) NULL
 	)
 
 CREATE TABLE proj.Symbol (
 	SymbolID INT PRIMARY KEY IDENTITY,
-	[Name] VARCHAR(32) NULL,
-	CountryID INT UNIQUE NOT NULL REFERENCES proj.Country(CountryID),
-	ExchangeID INT UNIQUE NOT NULL REFERENCES proj.Exchange(ExchangeID),
-	IndustryID INT UNIQUE NOT NULL REFERENCES proj.Industries(IndustryID),
-	SectorID INT UNIQUE NOT NULL REFERENCES proj.Sectors(SectorID))
+	[Name] VARCHAR(256) NULL,
+	CountryID INT NOT NULL REFERENCES proj.Country(CountryID),
+	ExchangeID INT NOT NULL REFERENCES proj.Exchange(ExchangeID),
+	IndustryID INT NOT NULL REFERENCES proj.Industries(IndustryID),
+	SectorID INT NOT NULL REFERENCES proj.Sectors(SectorID))
 
 CREATE TABLE proj.MarketDay (
-	[Date] DATE UNIQUE,
-	SymbolID INT UNIQUE NOT NULL REFERENCES proj.Symbol(SymbolID),
+	[Date] DATE,
+	SymbolID INT REFERENCES proj.Symbol(SymbolID),
 	Volume INT NULL,
 	PriceOpen FLOAT NULL,
 	PriceClose FLOAT NULL,
@@ -62,25 +62,25 @@ CREATE TABLE proj.PersonalInfo (
 
 CREATE TABLE proj.Clients (
 	ClientID INT PRIMARY KEY IDENTITY,
-	PersonalInfoID INT UNIQUE NOT NULL REFERENCES proj.PersonalInfo(PersonalInfoID))
+	PersonalInfoID INT NOT NULL REFERENCES proj.PersonalInfo(PersonalInfoID))
 
 CREATE TABLE proj.Brokers (
 	BrokerID INT PRIMARY KEY IDENTITY,
-	PersonalInfoID INT UNIQUE NOT NULL REFERENCES proj.PersonalInfo(PersonalInfoID))
+	PersonalInfoID INT NOT NULL REFERENCES proj.PersonalInfo(PersonalInfoID))
 
 CREATE TABLE proj.Transactions (
 	TransactionID INT PRIMARY KEY IDENTITY,
-	SymbolID INT UNIQUE NOT NULL REFERENCES proj.Symbol(SymbolID),
-	ClientID INT UNIQUE NOT NULL REFERENCES proj.Clients(ClientID),
-	BrokerID INT UNIQUE NOT NULL REFERENCES proj.Brokers(BrokerID),
+	SymbolID INT NOT NULL REFERENCES proj.Symbol(SymbolID),
+	ClientID INT NOT NULL REFERENCES proj.Clients(ClientID),
+	BrokerID INT NOT NULL REFERENCES proj.Brokers(BrokerID),
 	Quantity INT DEFAULT (0),
 	Price INT NULL)
 
 CREATE TABLE proj.Portfolio (
 	PortfolioID INT IDENTITY PRIMARY KEY NOT NULL,
-	[Type] VARCHAR(32) NULL)
+	[Type] VARCHAR(256) NULL)
 
 CREATE TABLE proj.BrokerPortfolio (
-	BrokerID INT UNIQUE NOT NULL REFERENCES proj.Brokers(BrokerID),
-	PortfolioID INT UNIQUE NOT NULL REFERENCES proj.Portfolio(PortfolioID),
+	BrokerID INT NOT NULL REFERENCES proj.Brokers(BrokerID),
+	PortfolioID INT NOT NULL REFERENCES proj.Portfolio(PortfolioID),
 	PRIMARY KEY(BrokerID, PortfolioID))
