@@ -78,7 +78,7 @@ CREATE TABLE proj.Transactions (
 
 CREATE TABLE proj.Portfolio (
 	PortfolioID INT IDENTITY PRIMARY KEY NOT NULL,
-	[Type] VARCHAR(256) NULL)
+	[Type] VARCHAR(256) NOT NULL)
 
 CREATE TABLE proj.BrokerPortfolio (
 	BrokerID INT NOT NULL REFERENCES proj.Brokers(BrokerID),
