@@ -25,52 +25,56 @@ for company in companyList:
         if company["Symbol"].lower() == yahoo["Ticker"].lower():
             try:
                 finance_data = (web.DataReader(company["Symbol"], 'yahoo', start, end))
+
                 SectorID = 0
                 IndustryID = 0
                 ExchangeID = 0
                 CountryID = 0
 
                 # SECTORS
-                cursor.execute("SELECT SectorID FROM proj.Sectors WHERE Name = " + company["Sector"])
+                cursor.execute("SELECT SectorID FROM proj.Sectors WHERE Name = '" + company["Sector"] + "'")
                 row = cursor.fetchone()
                 if row:
                     SectorID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Sectors (Name) VALUES (" + company["Sector"] + ")")
-                    sectorID = cursor.lastrowid()
+                    cursor.execute("INSERT INTO proj.Sectors (Name) VALUES ('" + company["Sector"] + "')")
+                    SectorID = cursor.lastrowid.real
 
                 # INDUSTRIES
-                cursor.execute("SELECT IndustryID FROM proj.Industries WHERE Name = " + company["Industry"])
+                cursor.execute("SELECT IndustryID FROM proj.Industries WHERE Name = '" + company["industry"] + "'")
                 row = cursor.fetchone()
                 if row:
                     IndustryID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Industries (Name) VALUES (" + company["Industry"] + ")")
-                    IndustryID = cursor.lastrowid()
+                    cursor.execute("INSERT INTO proj.Industries (Name) VALUES ('" + company["industry"] + "')")
+                    IndustryID = cursor.lastrowid.real
 
                 # EXCHANGES
-                cursor.execute("SELECT ExchangeID FROM proj.Exchange WHERE Name = " + yahoo["Exchange"])
+                cursor.execute("SELECT ExchangeID FROM proj.Exchange WHERE Name = '" + yahoo["Exchange"] + "'")
                 row = cursor.fetchone()
                 if row:
                     ExchangeID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Exchange (Name) VALUES (" + yahoo["Exchange"] + ")")
-                    ExchangeID = cursor.lastrowid()
+                    cursor.execute("INSERT INTO proj.Exchange (Name) VALUES ('" + yahoo["Exchange"] + "')")
+                    ExchangeID = cursor.lastrowid.real
 
                 # COUNTRIES
-                cursor.execute("SELECT ExchangeID FROM proj.Country WHERE Name = " + yahoo["Country"])
+                cursor.execute("SELECT CountryID FROM proj.Country WHERE Name = '" + yahoo["Country"] + "'")
                 row = cursor.fetchone()
                 if row:
                     CountryID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Country (Name) VALUES (" + yahoo["Country"] + ")")
-                    CountryID = cursor.lastrowid()
+                    cursor.execute("INSERT INTO proj.Country (Name) VALUES ('" + yahoo["Country"] + "')")
+                    CountryID = cursor.lastrowid.real
 
-                cursor.execute("INSERT INTO proj.Symbol (Name, SectorID, IndustryID, ExchangeID, CountryID) VALUES (" + company["Symbol"] + SectorID + IndustryID + ExchangeID + CountryID + ")")
+                cursor.execute("INSERT INTO proj.Symbol (Name, SectorID, IndustryID, ExchangeID, CountryID) VALUES ('" + company["Symbol"] + "'," + str(SectorID) + "," + str(IndustryID) + "," + str(ExchangeID) + "," + str(CountryID) + ")")
+                SymbolID = cursor.lastrowid.real
 
-
+                for index, row in finance_data.iterrows():
+                    cursor.execute("INSERT INTO proj.MarketDay (Date, SymbolID, Volume, PriceOpen, PriceClose) VALUES ('" + str(index) + "'," + str(SymbolID) + "," + str(row['Volume']) + "," + str(row['Open']) + "," + str(row['Close']) + ")")
 
             except:
                 print('Error for: ' + company["Symbol"])
 
+conn.commit()
 conn.close()
