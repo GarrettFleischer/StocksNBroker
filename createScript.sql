@@ -11,8 +11,8 @@ IF OBJECT_ID('proj.Industries') IS NOT NULL DROP TABLE proj.Industries;
 IF OBJECT_ID('proj.Exchange') IS NOT NULL DROP TABLE proj.Exchange;
 IF OBJECT_ID('proj.Country') IS NOT NULL DROP TABLE proj.Country;
 
---go
---CREATE SCHEMA proj
+go
+CREATE SCHEMA proj
 
 go
 CREATE TABLE proj.Country (
@@ -84,3 +84,22 @@ CREATE TABLE proj.BrokerPortfolio (
 	BrokerID INT NOT NULL REFERENCES proj.Brokers(BrokerID),
 	PortfolioID INT NOT NULL REFERENCES proj.Portfolio(PortfolioID),
 	PRIMARY KEY(BrokerID, PortfolioID))
+
+-- VIEWS
+go
+CREATE VIEW proj.ClientBalance (ClientName, BrokerName, Symbol, Balance) AS
+(
+	SELECT pic.FName + pic.LName ClientName, pib.FName + pib.LName BrokerName, s.Name AS Symbol, SUM(Price * ABS(Quantity)) AS Balance
+	FROM proj.Transactions AS t
+		JOIN proj.Clients AS c
+			ON t.ClientID = c.ClientID
+		JOIN proj.PersonalInfo AS pic
+			ON c.PersonalInfoID = pic.PersonalInfoID
+		JOIN proj.Brokers AS b
+			ON t.BrokerID = b.BrokerID
+		JOIN proj.PersonalInfo AS pib
+			ON b.PersonalInfoID = pib.PersonalInfoID
+		JOIN proj.Symbol AS s
+			ON s.SymbolID = t.SymbolID
+	GROUP BY pic.FName + pic.LName, pib.Fname + pib.LName, s.Name
+);
