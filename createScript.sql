@@ -1,5 +1,3 @@
-IF OBJECT_ID('proj.BrokerPortfolios') IS NOT NULL DROP TABLE proj.BrokerPortfolios;
-IF OBJECT_ID('proj.Portfolios') IS NOT NULL DROP TABLE proj.Portfolios;
 IF OBJECT_ID('proj.Transactions') IS NOT NULL DROP TABLE proj.Transactions;
 IF OBJECT_ID('proj.Brokers') IS NOT NULL DROP TABLE proj.Brokers;
 IF OBJECT_ID('proj.Clients') IS NOT NULL DROP TABLE proj.Clients;
@@ -10,6 +8,10 @@ IF OBJECT_ID('proj.Sectors') IS NOT NULL DROP TABLE proj.Sectors;
 IF OBJECT_ID('proj.Industries') IS NOT NULL DROP TABLE proj.Industries;
 IF OBJECT_ID('proj.Exchanges') IS NOT NULL DROP TABLE proj.Exchanges;
 IF OBJECT_ID('proj.Countries') IS NOT NULL DROP TABLE proj.Countries;
+IF OBJECT_ID('proj.ClientBalance') IS NOT NULL DROP VIEW proj.ClientBalance;
+IF OBJECT_ID('proj.MarketDaySymbols') IS NOT NULL DROP VIEW proj.MarketDaySymbols;
+IF OBJECT_ID('proj.BrokerInfo') IS NOT NULL DROP VIEW proj.BrokerInfo;
+
 GO
 
 --CREATE SCHEMA proj
@@ -95,20 +97,6 @@ GO
 		,	Price			INT				NULL
 	)
 
-	CREATE TABLE proj.Portfolios 
-	(
-			PortfolioID		INT				PRIMARY KEY IDENTITY
-		,	[Type]			VARCHAR(256)	NOT NULL
-	)
-
-	CREATE TABLE proj.BrokerPortfolios 
-	(
-			BrokerID		INT				NOT NULL REFERENCES proj.Brokers(BrokerID)
-		,	PortfolioID		INT				NOT NULL REFERENCES proj.Portfolios(PortfolioID)
-
-		,	PRIMARY KEY(BrokerID, PortfolioID)
-	)
-
 /** END TABLES **/
 
 
@@ -191,16 +179,68 @@ GO
 
 	CREATE INDEX IX_Transactions_Price
 		ON proj.Transactions (Price)
-
-
-	CREATE INDEX IX_Portfolios_Type
-		ON proj.Portfolios ([Type])
-
-
-	CREATE INDEX IX_BrokerPortfolios_BrokerID
-		ON proj.BrokerPortfolios (BrokerID)
-
-	CREATE INDEX IX_BrokerPortfolios_PortfolioID
-		ON proj.BrokerPortfolios (PortfolioID)
-
+		
 /** END INDEXES **/
+
+/** BEGIN VIEWS **/
+	go
+	CREATE VIEW proj.ClientBalance (ClientName, BrokerName, Symbols, Balance) AS
+	(
+		SELECT pic.FName + pic.LName ClientName, pib.FName + pib.LName BrokerName, s.Name AS Symbols, SUM(Price * ABS(Quantity)) AS Balance
+		FROM proj.Transactions AS t
+			JOIN proj.Clients AS c
+				ON t.ClientID = c.ClientID
+			JOIN proj.PersonalInfo AS pic
+				ON c.PersonalInfoID = pic.PersonalInfoID
+			JOIN proj.Brokers AS b
+				ON t.BrokerID = b.BrokerID
+			JOIN proj.PersonalInfo AS pib
+				ON b.PersonalInfoID = pib.PersonalInfoID
+			JOIN proj.Symbols AS s
+				ON s.SymbolID = t.SymbolID
+		GROUP BY pic.FName + pic.LName, pib.Fname + pib.LName, s.Name
+	);
+
+	go
+	CREATE VIEW proj.MarketDaySymbols (Symbols, Date, Volume, PriceOpen, PriceClose, Sectors, Industries, Exchanges, Countries) AS
+	(
+		SELECT s.Name AS Symbols, md.Date, md.Volume, md.PriceOpen, md.PriceClose, sec.Name AS Sectors, i.Name AS Industries, e.Name AS Exchanges, c.Name AS Countries
+		FROM proj.Symbols AS s
+			JOIN proj.MarketDays AS md
+				ON s.SymbolID = md.SymbolID
+			JOIN proj.Sectors AS sec
+				ON sec.SectorID = s.SectorID
+			JOIN proj.Industries AS i
+				ON i.IndustryID = s.IndustryID
+			JOIN proj.Exchanges AS e
+				ON e.ExchangeID = s.ExchangeID
+			JOIN proj.Countries AS c
+				ON c.CountryID = s.CountryID
+	);
+
+	go
+	CREATE VIEW proj.BrokerInfo (BrokerID, [Name], Username, Email, Address, ClientID, ClientName, SectorName) AS
+	(
+		SELECT b.BrokerID, pib.FName + pib.LName, pib.Username, pib.Email, pib.Address, c.ClientID, pic.FName + pic.LName, sec.Name
+		FROM proj.Transactions AS t
+			JOIN proj.Brokers AS b
+				ON t.BrokerID = b.BrokerID
+			JOIN proj.PersonalInfo AS pib
+				ON pib.PersonalInfoID = b.PersonalInfoID
+			JOIN proj.Clients AS c
+				ON c.ClientID = t.ClientID
+			JOIN proj.PersonalInfo AS pic
+				ON pic.PersonalInfoID = c.PersonalInfoID
+			JOIN proj.Symbols AS s
+				ON s.SymbolID = t.SymbolID
+			JOIN proj.Sectors AS sec
+				ON sec.SectorID = s.SectorID
+	);
+
+	INSERT INTO proj.PersonalInfo
+	(Username, Password, Email, FName, LName, Address)
+	VALUES ('Bob.Marley','dontworry','bob.marley@hotmail.com','Bob','Marley','Nine Miles, Saint Ann, Jamaica'),
+		   ('Ozzy.Osbourne', 'hellsbells', 'ozzy.osbourne@gmail.com','Ozzy','Osbourne','Los Angeles, California')
+
+
+/** END VIEWS **/
