@@ -237,6 +237,10 @@ GO
 				ON sec.SectorID = s.SectorID
 	);
 
+/** END VIEWS **/
+
+/** BEGIN INSERTS **/
+
 	go
 	INSERT INTO proj.PersonalInfo
 	(Username, Password, Email, FName, LName, Address)
@@ -248,5 +252,15 @@ GO
 		   ('Robert.Plant',	'stairwayToHeaven',	'robert.plant@hotmail.com',	'Robert', 'Plant', 'England'),
 		   ('Brian.Johnson', 'highwayToHell', 'brian.johnson@gmail.com', 'Brian', 'Johnson', 'Kangaroo Island, Australia');
 
+	go
+	INSERT INTO proj.Clients
+	(PersonalInfoID)
+	VALUES ('10'), ('11'), ('12'), ('13'), ('14')
 
-/** END VIEWS **/
+	go
+	INSERT INTO proj.Brokers
+	(PersonalInfoID)
+	VALUES ('15'), ('16')
+
+
+/** END INSERSTS **/
