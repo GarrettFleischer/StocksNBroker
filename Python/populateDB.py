@@ -50,28 +50,28 @@ for company in companyList:
                     IndustryID = cursor.lastrowid.real
 
                 # EXCHANGES
-                cursor.execute("SELECT ExchangeID FROM proj.Exchange WHERE Name = '" + yahoo["Exchange"] + "'")
+                cursor.execute("SELECT ExchangeID FROM proj.Exchanges WHERE Name = '" + yahoo["Exchange"] + "'")
                 row = cursor.fetchone()
                 if row:
                     ExchangeID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Exchange (Name) VALUES ('" + yahoo["Exchange"] + "')")
+                    cursor.execute("INSERT INTO proj.Exchanges (Name) VALUES ('" + yahoo["Exchange"] + "')")
                     ExchangeID = cursor.lastrowid.real
 
                 # COUNTRIES
-                cursor.execute("SELECT CountryID FROM proj.Country WHERE Name = '" + yahoo["Country"] + "'")
+                cursor.execute("SELECT CountryID FROM proj.Countries WHERE Name = '" + yahoo["Country"] + "'")
                 row = cursor.fetchone()
                 if row:
                     CountryID = row[0]
                 else:
-                    cursor.execute("INSERT INTO proj.Country (Name) VALUES ('" + yahoo["Country"] + "')")
+                    cursor.execute("INSERT INTO proj.Countries (Name) VALUES ('" + yahoo["Country"] + "')")
                     CountryID = cursor.lastrowid.real
 
-                cursor.execute("INSERT INTO proj.Symbol (Name, SectorID, IndustryID, ExchangeID, CountryID) VALUES ('" + company["Symbol"] + "'," + str(SectorID) + "," + str(IndustryID) + "," + str(ExchangeID) + "," + str(CountryID) + ")")
+                cursor.execute("INSERT INTO proj.Symbols (Name, SectorID, IndustryID, ExchangeID, CountryID) VALUES ('" + company["Symbol"] + "'," + str(SectorID) + "," + str(IndustryID) + "," + str(ExchangeID) + "," + str(CountryID) + ")")
                 SymbolID = cursor.lastrowid.real
 
                 for index, row in finance_data.iterrows():
-                    cursor.execute("INSERT INTO proj.MarketDay (Date, SymbolID, Volume, PriceOpen, PriceClose) VALUES ('" + str(index) + "'," + str(SymbolID) + "," + str(row['Volume']) + "," + str(row['Open']) + "," + str(row['Close']) + ")")
+                    cursor.execute("INSERT INTO proj.MarketDays (Date, SymbolID, Volume, PriceOpen, PriceClose) VALUES ('" + str(index) + "'," + str(SymbolID) + "," + str(row['Volume']) + "," + str(row['Open']) + "," + str(row['Close']) + ")")
 
             except:
                 print('Error for: ' + company["Symbol"])
