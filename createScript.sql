@@ -113,10 +113,8 @@ GO
 	CREATE INDEX IX_Industries_Name
 		ON proj.Countries ([Name])
 
-
 	CREATE INDEX IX_Sectors_Name
 		ON proj.Sectors ([Name])
-
 
 	CREATE INDEX IX_Symbols_Name
 		ON proj.Symbols ([Name])
@@ -239,6 +237,28 @@ GO
 
 /** END VIEWS **/
 
+/** BEGIN QUERIES **/
+
+-- Highest volume of the given day
+go
+CREATE PROCEDURE highestVolumeForDate
+	(
+		@Date Date
+	)
+	AS
+		SELECT TOP (1)md.Date, sec.Name AS SectorName, SUM(md.Volume) AS Volume
+		FROM proj.MarketDays AS md
+			JOIN proj.Symbols AS s
+				ON md.SymbolID = s.SymbolID
+			JOIN proj.Sectors AS sec
+				ON s.SectorID = sec.SectorID
+		WHERE md.Date = @Date
+		GROUP BY md.Date, sec.Name
+		ORDER BY Volume DESC;
+
+EXEC highestVolumeForDate '2016-11-25';
+/** END QUERIES **/
+
 /** BEGIN INSERTS **/
 
 	go
@@ -255,12 +275,12 @@ GO
 	go
 	INSERT INTO proj.Clients
 	(PersonalInfoID)
-	VALUES ('10'), ('11'), ('12'), ('13'), ('14')
+	VALUES ('1'), ('2'), ('3'), ('4'), ('5')
 
 	go
 	INSERT INTO proj.Brokers
 	(PersonalInfoID)
-	VALUES ('15'), ('16')
+	VALUES ('6'), ('7')
 
 
-/** END INSERSTS **/
+/** END INSERTS **/
