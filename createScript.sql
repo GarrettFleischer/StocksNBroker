@@ -8,9 +8,12 @@ IF OBJECT_ID('proj.Sectors') IS NOT NULL DROP TABLE proj.Sectors;
 IF OBJECT_ID('proj.Industries') IS NOT NULL DROP TABLE proj.Industries;
 IF OBJECT_ID('proj.Exchanges') IS NOT NULL DROP TABLE proj.Exchanges;
 IF OBJECT_ID('proj.Countries') IS NOT NULL DROP TABLE proj.Countries;
+
 IF OBJECT_ID('proj.ClientBalance') IS NOT NULL DROP VIEW proj.ClientBalance;
 IF OBJECT_ID('proj.MarketDaySymbols') IS NOT NULL DROP VIEW proj.MarketDaySymbols;
-IF OBJECT_ID('proj.BrokerInfo') IS NOT NULL DROP VIEW proj.BrokerInfo;
+IF OBJECT_ID('proj.BrokerInfo') IS NOT NULL DROP VIEW proj.BrokerInfo
+
+IF OBJECT_ID('proj.highestVolumeForDate') IS NOT NULL DROP PROCEDURE proj.highestVolumeForDate;
 
 GO
 
@@ -93,6 +96,7 @@ GO
 		,	SymbolID		INT				NOT NULL REFERENCES proj.Symbols(SymbolID)
 		,	ClientID		INT				NOT NULL REFERENCES proj.Clients(ClientID)
 		,	BrokerID		INT				NOT NULL REFERENCES proj.Brokers(BrokerID)
+		,	[Date]			DateTime		NOT NULL	
 		,	Quantity		INT				NULL DEFAULT (0)
 		,	Price			INT				NULL
 	)
@@ -239,24 +243,23 @@ GO
 
 /** BEGIN QUERIES **/
 
--- Highest volume of the given day
-go
-CREATE PROCEDURE highestVolumeForDate
+	-- Highest volume of the given day
+	go
+	CREATE PROCEDURE proj.highestVolumeForDate
 	(
 		@Date Date
 	)
 	AS
-		SELECT TOP (1)md.Date, sec.Name AS SectorName, SUM(md.Volume) AS Volume
+		SELECT TOP (1) md.Date, sec.SectorID, sec.Name AS SectorName, SUM(md.Volume) AS TotalVolume
 		FROM proj.MarketDays AS md
 			JOIN proj.Symbols AS s
 				ON md.SymbolID = s.SymbolID
 			JOIN proj.Sectors AS sec
 				ON s.SectorID = sec.SectorID
 		WHERE md.Date = @Date
-		GROUP BY md.Date, sec.Name
+		GROUP BY md.Date, sec.SectorID, sec.Name
 		ORDER BY Volume DESC;
 
-EXEC highestVolumeForDate '2016-11-25';
 /** END QUERIES **/
 
 /** BEGIN INSERTS **/
@@ -264,13 +267,13 @@ EXEC highestVolumeForDate '2016-11-25';
 	go
 	INSERT INTO proj.PersonalInfo
 	(Username, Password, Email, FName, LName, Address)
-	VALUES ('Bob.Marley','dontworry','bob.marley@hotmail.com','Bob','Marley','Nine Miles, Saint Ann, Jamaica'),
-		   ('Ozzy.Osbourne', 'hellsbells', 'ozzy.osbourne@gmail.com','Ozzy','Osbourne','Los Angeles, California'),
-		   ('James.Hetfield', 'unforgiven', 'james.hetfield@yahoo.com',	'James', 'Hetfield', 'Los Angeles, California'),
-		   ('John.Lennon',	'yellowSubmarine',	'john.lennon@aol.com', 'John', 'Lennon', 'Manhattan, New York City, NY'),
-		   ('Steven.Tyler',	'dreamOn', 'steven.tyler@gmail.com', 'Steven', 'Tyler',	'Hollywood, California'),
-		   ('Robert.Plant',	'stairwayToHeaven',	'robert.plant@hotmail.com',	'Robert', 'Plant', 'England'),
-		   ('Brian.Johnson', 'highwayToHell', 'brian.johnson@gmail.com', 'Brian', 'Johnson', 'Kangaroo Island, Australia');
+	VALUES	('Bob.Marley','dontworry','bob.marley@hotmail.com','Bob','Marley','Nine Miles, Saint Ann, Jamaica'),
+			('Ozzy.Osbourne', 'hellsbells', 'ozzy.osbourne@gmail.com','Ozzy','Osbourne','Los Angeles, California'),
+			('James.Hetfield', 'unforgiven', 'james.hetfield@yahoo.com',	'James', 'Hetfield', 'Los Angeles, California'),
+			('John.Lennon',	'yellowSubmarine',	'john.lennon@aol.com', 'John', 'Lennon', 'Manhattan, New York City, NY'),
+			('Steven.Tyler',	'dreamOn', 'steven.tyler@gmail.com', 'Steven', 'Tyler',	'Hollywood, California'),
+			('Robert.Plant',	'stairwayToHeaven',	'robert.plant@hotmail.com',	'Robert', 'Plant', 'England'),
+			('Brian.Johnson', 'highwayToHell', 'brian.johnson@gmail.com', 'Brian', 'Johnson', 'Kangaroo Island, Australia');
 
 	go
 	INSERT INTO proj.Clients
@@ -282,5 +285,45 @@ EXEC highestVolumeForDate '2016-11-25';
 	(PersonalInfoID)
 	VALUES ('6'), ('7')
 
+go
+	INSERT INTO proj.Transactions 
+	(SymbolID, ClientID, BrokerID, [Date], Quantity, Price)
+	VALUES	(401, 1, 1, '2016-11-30', 500, -6),
+			(2400, 1, 1, '2016-11-30', 1000, -0.96),
+			(2226, 1, 1, '2016-11-30', 50, -150),
+			(1234, 2, 1, '2016-11-30', 450, -25),
+			(12, 2, 1, '2016-11-30', 325, -1.75),
+			(456, 2, 1, '2016-11-30', 40, -25),
+			(678, 3, 1, '2016-11-30', 25, -50.25),
+			(2578, 3, 1, '2016-11-30', 50, -5),
+			(1543, 3, 1, '2016-11-30', 1000, -0.52),
+			(1673, 4, 2, '2016-11-30', 2500, -0.67),
+			(1367, 4, 2, '2016-11-30', 3500, -0.01),
+			(467, 4, 2, '2016-11-30', 1200, -3),
+			(356, 5, 2, '2016-11-30', 550, -8),
+			(235, 5, 2, '2016-11-30', 400, -5),
+			(124, 5, 2, '2016-11-30', 1000, -3.45),
+			(52, 6, 2, '2016-11-30', 4325, -0.32),
+			(586, 6, 2, '2016-11-30', 3232, -0.58),
+			(1854, 6, 2, '2016-11-30', 674, -2.46),
+
+			(401, 1, 1, '2016-12-1', -250, 8),
+			(2400, 1, 1, '2016-12-1', -1000, 0.50),
+			(2226, 1, 1, '2016-12-1', -40, 158),
+			(1234, 2, 1, '2016-12-1', -450, 20),
+			(12, 2, 1, '2016-12-1', -100, 1.95),
+			(456, 2, 1, '2016-12-1', -40, 30),
+			(678, 3, 1, '2016-12-1', -15, 51.32),
+			(2578, 3, 1, '2016-12-1', -50, 4.50),
+			(1543, 3, 1, '2016-12-1', -500, 0.69),
+			(1673, 4, 2, '2016-12-1', -1500, 0.90),
+			(1367, 4, 2, '2016-12-1', -2500, 0.05),
+			(467, 4, 2, '2016-12-1', -500, 3.50),
+			(356, 5, 2, '2016-12-1', -250, 8.94),
+			(235, 5, 2, '2016-12-1', -400, 4.23),
+			(124, 5, 2, '2016-12-1', -100, 3.50),
+			(52, 6, 2, '2016-12-1', -2325, 0.57),
+			(586, 6, 2, '2016-12-1', -2232, 0.75),
+			(1854, 6, 2, '2016-12-1', -674, 3.46);
 
 /** END INSERTS **/
