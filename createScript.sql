@@ -237,10 +237,16 @@ GO
 				ON sec.SectorID = s.SectorID
 	);
 
+	go
 	INSERT INTO proj.PersonalInfo
 	(Username, Password, Email, FName, LName, Address)
 	VALUES ('Bob.Marley','dontworry','bob.marley@hotmail.com','Bob','Marley','Nine Miles, Saint Ann, Jamaica'),
-		   ('Ozzy.Osbourne', 'hellsbells', 'ozzy.osbourne@gmail.com','Ozzy','Osbourne','Los Angeles, California')
+		   ('Ozzy.Osbourne', 'hellsbells', 'ozzy.osbourne@gmail.com','Ozzy','Osbourne','Los Angeles, California'),
+		   ('James.Hetfield', 'unforgiven', 'james.hetfield@yahoo.com',	'James', 'Hetfield', 'Los Angeles, California'),
+		   ('John.Lennon',	'yellowSubmarine',	'john.lennon@aol.com', 'John', 'Lennon', 'Manhattan, New York City, NY'),
+		   ('Steven.Tyler',	'dreamOn', 'steven.tyler@gmail.com', 'Steven', 'Tyler',	'Hollywood, California'),
+		   ('Robert.Plant',	'stairwayToHeaven',	'robert.plant@hotmail.com',	'Robert', 'Plant', 'England'),
+		   ('Brian.Johnson', 'highwayToHell', 'brian.johnson@gmail.com', 'Brian', 'Johnson', 'Kangaroo Island, Australia');
 
 
 /** END VIEWS **/
